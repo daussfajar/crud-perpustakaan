@@ -21,3 +21,6 @@ Database yang digunakan adalah MySQL dengan nama database **crud_perpustakaan**.
 2. buka cmd ketikkan `php artisan migrate`
 3. buka cmd ketikkan `php artisan db:seed`
 4. Setting API_KEY dan API_SECRET pada .env anda
+
+### Autentikasi
+Untuk mengakses API, Anda perlu melakukan autentikasi terlebih dahulu menggunakan Bearer, untuk itu perlu disetting dahulu di API_KEY dan API_SECRET nya.
