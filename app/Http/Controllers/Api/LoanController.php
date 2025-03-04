@@ -5,92 +5,59 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-use App\Models\Loans;
-use App\Models\User;
-use App\Models\Books;
-
+use App\Services\LoanService;
 class LoanController extends Controller
 {
-    function __construct()
-    {
+    protected $service;
 
+    function __construct(LoanService $service) {
+        $this->service = $service;
     }
 
-    public function index(){
-        $loans = Loans::all();
-
-        $data = [];
-        foreach($loans as $loan){
-            $data[] = [
-                'loan_id' => $loan->loan_id,
-                'user_id' => $loan->user_id,
-                'book_id' => $loan->book_id,
-                'loan_date' => $loan->loan_date,
-                'return_date' => $loan->return_date,
-                'status' => $loan->status,
-            ];
-        }
-
-        return response()->json([
-            'status' => 'success',
-            'data' => $data,
-        ], 200);
+    public function showAllLoans() {
+        $loans = $this->service->showAllLoans();
+        return $loans;
     }
 
-    public function loanBook(Request $request){
-        $userId = $request->input('user_id') ?? null;
-        $bookId = $request->input('book_id') ?? null;
-        $loanDate = $request->input('loan_date') ?? null;
-        $returnDate = $request->input('return_date') ?? null;
-
-        if(!$userId || !$bookId || !$loanDate || !$returnDate){
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Please provide all required fields',
-            ], 400);
-        }
-
-        $findUser = User::where('id', $userId)->first();
-        if(!$findUser){
-            return response()->json([
-                'status' => 'error',
-                'message' => 'User not found',
-            ], 404);
-        }
-
-        $findBooks = Books::where('book_id', $bookId)->first();
-        if(!$findBooks){
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Book not found',
-            ], 404);
-        }
-
-        if($loanDate > $returnDate){
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Loan date cannot be greater than return date',
-            ], 400);
-        }
-
-        $insertLoan = Loans::insert([
-            'user_id' => $userId,
-            'book_id' => $bookId,
-            'loan_date' => $loanDate,
-            'return_date' => $returnDate,
-            'status' => 'borrowed',
+    public function showLoanById(Request $request) {
+        $loanId = $request->loan_id;
+        $loan = $this->service->showLoanById([
+            'loan_id' => $loanId
         ]);
 
-        if(!$insertLoan){
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Failed to loan book',
-            ], 500);
-        }
+        return $loan;
+    }
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Book loaned successfully',
-        ], 200);
+    public function createLoan(Request $request) {
+        $loan = $this->service->createLoan([
+            'user_id' => $request->input('user_id'),
+            'book_id' => $request->input('book_id'),
+            'loan_date' => $request->input('loan_date'),
+            'return_date' => $request->input('return_date'),
+            'status' => $request->input('status')
+        ]);
+
+        return $loan;
+    }
+
+    public function showLoanByUserId(Request $request) {
+        $userId = $request->user_id;
+        $loan = $this->service->showLoansByUserId([
+            'user_id' => $userId
+        ]);
+
+        return $loan;
+    }
+
+    public function returnBook(Request $request) {
+        $loanId = $request->loan_id;
+        $loan = $this->service->returnBook([
+            'loan_id'   => $loanId,
+            'user_id'   => $request->input('user_id'),
+            'status'    => $request->input('status'),
+            'notes'     => $request->input('notes')
+        ]);
+
+        return $loan;
     }
 }

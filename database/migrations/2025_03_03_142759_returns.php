@@ -12,13 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('returns', function (Blueprint $table) {
-            $table->id('return_id')->autoIncrement();
-            $table->unsignedBigInteger('loan_id');
+            $table->unsignedInteger('return_id')->id()->autoIncrement();
+            $table->unsignedInteger('loan_id');
             $table->date('return_date');
-            $table->enum('status', ['fine', 'good']);
+            $table->enum('status', ['fine', 'damaged', 'lost']);
+            $table->text('notes')->nullable();
             $table->timestamps();
 
-            $table->foreign('loan_id')->references('loan_id')->on('loans');
+            $table->foreign('loan_id')->references('loan_id')->on('loans')->onDelete('cascade');
         });
     }
 

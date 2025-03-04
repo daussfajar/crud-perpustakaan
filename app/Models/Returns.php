@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Returns extends Model
 {
     protected $table = 'returns';
+    protected $primaryKey = 'return_id';
 
     protected $fillable = [
         'return_id',

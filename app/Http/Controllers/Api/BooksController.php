@@ -3,46 +3,51 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 
-use App\Models\Books;
-use App\Models\Categories;
+use App\Services\BookService;
+use Illuminate\Http\Request;
 
 class BooksController extends Controller
 {
-    function __construct()
-    {
+    protected $service;
 
+    function __construct(BookService $service){
+        $this->service = $service;
     }
 
     public function index(){
-        $books = Books::all();
-        return response()->json([
-            'status' => 'success',
-            'data' => $books,
-        ], 200);
+        return $this->service->fetchAllBooks();
     }
 
-    public function get(int $id){
-        $book = Books::where('book_id', $id)->first();
-        if(!$book){
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Book not found',
-            ], 404);
-        }
-
-        return response()->json([
-            'status' => 'success',
-            'data' => $book,
-        ], 200);
+    public function show($id){
+        return $this->service->fetchBookById($id);
     }
 
-    public function getCategories(){
-        $categories = Categories::all();
-        return response()->json([
-            'status' => 'success',
-            'data' => $categories,
-        ], 200);
+    public function store(Request $request){
+        return $this->service->insertBook([
+            'title'         => $request->input('title'),
+            'author'        => $request->input('author'),
+            'publisher'     => $request->input('publisher'),
+            'year'          => $request->input('year'),
+            'isbn'          => $request->input('isbn'),
+            'stock'         => $request->input('stock'),
+            'category_id'   => $request->input('category_id')
+        ]);
+    }
+
+    public function update($id, Request $request){
+        return $this->service->updateBook([
+            'title'         => $request->input('title'),
+            'author'        => $request->input('author'),
+            'publisher'     => $request->input('publisher'),
+            'year'          => $request->input('year'),
+            'isbn'          => $request->input('isbn'),
+            'stock'         => $request->input('stock'),
+            'category_id'   => $request->input('category_id')
+        ], $id);
+    }
+
+    public function delete($id){
+        return $this->service->deleteBook($id);
     }
 }
